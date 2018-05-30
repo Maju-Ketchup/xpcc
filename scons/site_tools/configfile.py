@@ -29,12 +29,12 @@
 import re, os, sys
 import xml.etree.ElementTree as et
 import xml.parsers.expat
+import SCons.Node
+import SCons.Errors
 try:
 	import configparser
 except:
-	import ConfigParser as configparser
-import SCons.Node
-import SCons.Errors
+	import ConfigParser as configparser 
 
 def listify(node):
 	return [node,] if (not isinstance(node, list) and \
