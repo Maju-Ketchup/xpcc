@@ -8,8 +8,6 @@
  * Copyright 2013 =(c); Decawave Ltd, Dublin, Ireland.
  * c++ Conversion: Marten Junga (2018)
  *
- * All rights reserved.
- *
  */
 
 #ifndef _DECA_REGS_H_

@@ -136,6 +136,18 @@ Computes the Position of a tag when the Sendtimes of the Tag and the receive tim
 									   const floatunit SendtimeAnchor2,
 									   const floatunit SendtimeAnchor3,
 									   const floatunit SendtimeAnchor4);
+
+	static void passiveMultilateration2D(Vector<floatunit, 3> &output,
+												const Vector<floatunit, 3> anchor1,
+												const Vector<floatunit, 3> anchor2,
+												const Vector<floatunit, 3> anchor3,
+												const floatunit ReceiveTimeAnchor1,
+												const floatunit ReceiveTimeAnchor2,
+												const floatunit ReceiveTimeAnchor3,
+												const floatunit ReceiveTimeAnchor4,
+												const floatunit SendtimeAnchor1,
+												const floatunit SendtimeAnchor2,
+												const floatunit SendtimeAnchor3);
 private:
 	static void rotate(floatunit angle, floatunit &x, floatunit &y);
 };

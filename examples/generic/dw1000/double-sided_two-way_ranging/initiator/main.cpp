@@ -41,6 +41,9 @@
 //-------------------------Namespaces and renaming----------------------------------
 // change things up for each individual board
 using namespace Board;
+#define STMF103
+
+#ifdef STMF4
 using SPI		=	SpiMaster2;
 using SPISCK	=	GpioOutputB10;
 using SPIMISO	=	GpioInputC2;
@@ -48,6 +51,17 @@ using SPIMOSI	=	GpioOutputB15;
 using RES		=	GpioOutputA8;
 using CS		=	GpioOutputE8;
 using IRQ		=	GpioInputD10;
+#endif
+
+#ifdef STMF103
+using SPI		=	SpiMaster2;
+using SPISCK	=	GpioOutputB13;
+using SPIMISO	=	GpioInputB14;
+using SPIMOSI	=	GpioOutputB15;
+using RES		=	GpioOutputA8;
+using CS		=	GpioOutputB12;
+using IRQ		=	GpioInputB8;
+#endif
 
 
 using dwm = xpcc::Dw1000 < SPI, CS, RES, IRQ >;
@@ -158,7 +172,7 @@ main()
 					dwm::rxreset();
 					dwm::rxEnable();
 					isrx = false;
-					timeout.restart(150);
+					timeout.restart(20);
 					while(not(dwm::checkForRXError() || (isrx = dwm::checkForRX())  || timeout.isExpired())){}
 					if (isrx)
 					{

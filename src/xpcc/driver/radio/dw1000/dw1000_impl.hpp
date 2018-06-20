@@ -5,15 +5,8 @@
  * The file is part of the xpcc library and is released under the 3-clause BSD
  * license. See the file `LICENSE` for the full license governing this code.
  *
- *
- * The headder contains the class implementation of the IEEE standart 802.15.4-2011 Frame
- * current max size is 255 bytes
- * Set always control first
- *
  */
 
-
-//Lot of Parts copied out of the DWM1000 API added some 'easier to use functions' *mja*
 //"Don't include this file directly, use 'dw1000.hpp' instead!"
 
 
@@ -42,17 +35,17 @@ template < typename Spi, typename Cs, typename Reset, typename Irq >
 bool
 xpcc::Dw1000< Spi, Cs, Reset, Irq >::isChannelFree()
 {
-	const uint32_t rxEvent = (SYS_STATUS_RXPRD |
-							  SYS_STATUS_RXSFDD |
+	const uint32_t rxEvent = (SYS_STATUS_RXPRD   |
+							  SYS_STATUS_RXSFDD  |
 							  SYS_STATUS_LDEDONE |
-							  SYS_STATUS_RXPHD |
-							  SYS_STATUS_RXPHE |
-							  SYS_STATUS_RXDFR |
-							  SYS_STATUS_RXFCG |
+							  SYS_STATUS_RXPHD	 |
+							  SYS_STATUS_RXPHE   |
+							  SYS_STATUS_RXDFR   |
+							  SYS_STATUS_RXFCG   |
 							  SYS_STATUS_RXFCE);
 	write32bitreg(SYS_STATUS_ID,rxEvent);
 	rxEnable();
-	xpcc::delayMicroseconds(1807); // time of two transmissions
+	xpcc::delayMicroseconds(300);
 	trxdisable();
 	if (readStatusRegister()&rxEvent)
 	{
@@ -70,7 +63,7 @@ xpcc::Dw1000< Spi, Cs, Reset, Irq >::isChannelFree()
 
 template < typename Spi, typename Cs, typename Reset, typename Irq >
 xpcc::dw1000::IRQreason
-xpcc::Dw1000< Spi, Cs, Reset, Irq >::getIRQReason() // TODO
+xpcc::Dw1000< Spi, Cs, Reset, Irq >::getIRQReason()
 {
 	uint32_t systatus = readStatusRegister();
 	systatus &= read32bitreg(SYS_MASK_ID);
@@ -83,7 +76,7 @@ xpcc::Dw1000< Spi, Cs, Reset, Irq >::getIRQReason() // TODO
 	}
 	else if (systatus & SYS_STATUS_TXFRS )
 	{
-		write32bitreg(SYS_STATUS_ID, SYS_STATUS_TXFRS);
+		write32bitreg(SYS_STATUS_ID, SYS_STATUS_ALL_TX );
 		return xpcc::dw1000::IRQreason::TX_Complete; //Frame send
 	}
 	else if (systatus &  SYS_STATUS_ALL_RX_ERR)
@@ -145,6 +138,20 @@ xpcc::Dw1000< Spi, Cs, Reset, Irq >::setIRQ(uint32_t registermask)
 	write32bitreg(SYS_MASK_ID, registermask);
 }
 
+template < typename Spi, typename Cs, typename Reset, typename Irq >
+uint64_t
+xpcc::Dw1000< Spi, Cs, Reset, Irq >::readSystemTimestamp64()
+{
+	uint8_t ts_tab[5];
+	uint64_t ts = 0;
+	readsystime(ts_tab);
+	for (int i = 0; i < 5; i++)
+	{
+		ts = ts << 8;
+		ts |= ts_tab[4-i];
+	}
+	return ts;
+}
 
 template < typename Spi, typename Cs, typename Reset, typename Irq >
 uint64_t
@@ -239,10 +246,6 @@ bool
 xpcc::Dw1000< Spi, Cs, Reset, Irq >::checkForRX()
 {
 	uint32_t status_reg = read32bitreg(SYS_STATUS_ID);
-	if (status_reg & SYS_STATUS_ALL_RX_TO)
-	{XPCC_LOG_ERROR << "!!!DWM1000: RECEIVE TIME OUT!!!" << xpcc::endl;}
-	if (status_reg & SYS_STATUS_ALL_RX_ERR)
-	{XPCC_LOG_ERROR << "!!!DWM1000: RECEIVE ERROR OCCURRED!!!" << xpcc::endl;}
 	return (status_reg & (SYS_STATUS_RXFCG));
 }
 
@@ -303,6 +306,11 @@ template < typename Spi, typename Cs, typename Reset, typename Irq >
 bool
 xpcc::Dw1000< Spi, Cs, Reset, Irq >::checkForRXError()
 {
+	uint32_t status_reg = read32bitreg(SYS_STATUS_ID);
+	if (status_reg & SYS_STATUS_ALL_RX_TO)
+	{XPCC_LOG_ERROR << "!!!DWM1000: RECEIVE TIME OUT!!!" << xpcc::endl;}
+	if (status_reg & SYS_STATUS_ALL_RX_ERR)
+	{XPCC_LOG_ERROR << "!!!DWM1000: RECEIVE ERROR OCCURRED!!!" << xpcc::endl;}
 	return (read32bitreg(SYS_STATUS_ID) & SYS_STATUS_ALL_RX_ERR);
 }
 

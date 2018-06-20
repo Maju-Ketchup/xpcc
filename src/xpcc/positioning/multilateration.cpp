@@ -66,7 +66,7 @@ void xpcc::multilateration::activemultilateration(Vector<floatunit, 3> &output,
 	floatunit t0 = (2 * B);
 	floatunit t1 = powf(4*B,2.f)- (4*A*C);
 	t0 = t0 + sqrt(t1);
-	t0 = t0 / (2*C);
+	t0 = t0 / (C != 0 ? 2*C : 1);
 
 	output.x = A00b[0][0] + (A0tb[0][0]*t0);
 	output.y = A00b[1][0] + (A0tb[1][0]*t0);
@@ -102,9 +102,6 @@ void xpcc::multilateration::passivemultilateration(Vector<floatunit, 3> &output,
 
 }
 
-
-
-
 void
 xpcc::multilateration::trilaterationAna(Vector<floatunit, 3> &output,
 									 Vector<floatunit, 3> anchor0,
@@ -119,16 +116,7 @@ const floatunit a0[12] = { 1,anchor0[0]*anchor0[0],anchor1[0]*anchor1[0],anchor2
 						   1,anchor0[2]*anchor0[2],anchor1[2]*anchor1[2],anchor2[2]*anchor2[2]};
 
 //Matrix<floatunit, 3,4> A0(a0);
-
-
-
-
 }
-
-
-
-
-
 
 void
 xpcc::multilateration::trilateration(Vector<floatunit, 3> &output,
@@ -159,10 +147,10 @@ xpcc::multilateration::trilateration(Vector<floatunit, 3> &output,
 	xpcc::multilateration::rotate (2*M_PI-rotationangleYZ,newAnchor2.y,newAnchor2.z);
 
 	//Berechne Output nach Pablo Cotera et al 2016 [Indoor Robot Positioning using an Enhanced Trilateration Algorithm]
-	output.x = (powf(distanceToAnchor0,2)-powf(distanceToAnchor1,2)+powf(newAnchor1.x,2)) / (2*newAnchor1.x);
+	output.x = (powf(distanceToAnchor0,2)-powf(distanceToAnchor1,2)+powf(newAnchor1.x,2)) / (newAnchor1.x != 0 ? 2*newAnchor1.x : 1);
 	output.y = ((powf(distanceToAnchor0,2)-powf(distanceToAnchor2,2))
 				+powf(newAnchor2.x,2) + powf(newAnchor2.y,2)-(2*newAnchor2.x*output.x))
-			/ (2*newAnchor2.y);
+			/ (newAnchor2.y != 0 ? 2*newAnchor2.y : 1);
 
 	floatunit zsqaured = powf(distanceToAnchor0,2.0) - powf(output.x,2.0) - powf(output.y,2.0);
 
@@ -194,6 +182,19 @@ void xpcc::multilateration::rotate(floatunit angle, floatunit &x, floatunit &y)
 	y = ynew;
 }
 
+void xpcc::multilateration::passiveMultilateration2D(Vector<floatunit, 3> &output,
+											  Vector<floatunit, 3> anchor1,
+											  Vector<floatunit, 3> anchor2,
+											  Vector<floatunit, 3> anchor3,
+											  floatunit ReceiveTimeAnchor1,
+											  floatunit ReceiveTimeAnchor2,
+											  floatunit ReceiveTimeAnchor3,
+											  floatunit ReceiveTimeAnchor4,
+											  floatunit SendtimeAnchor1,
+											  floatunit SendtimeAnchor2,
+											  floatunit SendtimeAnchor3)
+{
+	floatunit time1 = (SendtimeAnchor2-SendtimeAnchor1);
+	floatunit time2 = (SendtimeAnchor3-SendtimeAnchor1);
 
-
-
+}

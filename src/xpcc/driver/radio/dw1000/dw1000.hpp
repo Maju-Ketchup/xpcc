@@ -403,6 +403,22 @@ public:
 	*/
 	readsystimestamplo32(void);
 
+	static uint64_t
+	/**
+	*@brief
+*
+	*@return uint64_t
+	*/
+	readSystemTimestamp64();
+
+	static uint32_t
+	/**
+	*@brief
+	* Returns the device ID written in the 0x00 Register
+	*@return uint32_t
+	*/
+	readdevid();
+
 	//config stuff
 	static constexpr uint32_t DEVICE_ID  = 0xDECA0130;
 	static constexpr int FORCE_SYS_XTI	= 0;
@@ -460,13 +476,7 @@ private:
 	*/
 	readfromspi(uint16_t headerLength, const uint8_t *headerBuffer, uint32_t readlength, uint8_t *readBuffer);
 
-	static uint32_t
-	/**
-	*@brief
-	*
-	*@return uint32_t
-	*/
-	readdevid();
+
 
 	static void
 	/**

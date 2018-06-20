@@ -4,17 +4,10 @@
  *
  * The file is part of the xpcc library and is released under the 3-clause BSD
  * license. See the file `LICENSE` for the full license governing this code.
- *
- *
- * The headder contains the class implementation of the IEEE standart 802.15.4-2011 Frame
- * current max size is 255 bytes
- * Set always control first
- *
  */
-
+// Set always control first
 #include "dw1000.hpp"
 
-//--------------------------------------------------------------XPCC-Functions-Puplic------------------------------------------------------------------------
 
 constexpr uint16_t xpcc::dw1000::lde_replicaCoeff[dw1000::PCODES];
 constexpr uint32_t xpcc::dw1000::digital_bb_config[NUM_PRF][dw1000::NUM_PACS];

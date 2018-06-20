@@ -57,7 +57,7 @@ public:
 	/* Delay between frames, in UWB microseconds. */
 	static constexpr int POLL_TX_TO_RESP_RX_DLY_UUS = 140;
 	/* Receive response timeout. */
-	static constexpr int RESP_RX_TIMEOUT_UUS = 1750;
+	static constexpr int RESP_RX_TIMEOUT_UUS = 2000;
 
 	/* Speed of light in vakuum, in meters per second. */
 	static constexpr int SPEED_OF_LIGHT = 299792548;
@@ -134,8 +134,8 @@ public:
 
 	/**
 	* @brief
-	* Computes the distance with a given time of flight in (Micro Controler time units)
-	* @param tof in clocktics
+	* Computes the distance with a given time of flight in s
+	* @param tof in s
 	* @param travelspeed travelspeed in m/s
 	* @return float
 	*/
