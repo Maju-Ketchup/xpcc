@@ -65,7 +65,7 @@ void xpcc::multilateration::activemultilateration(Vector<floatunit, 3> &output,
 
 	floatunit t0 = (2 * B);
 	floatunit t1 = powf(4*B,2.f)- (4*A*C);
-	t0 = t0 + sqrt(t1);
+	t0 = t0 + sqrt(abs(t1));
 	t0 = t0 / (C != 0 ? 2*C : 1);
 
 	output.x = A00b[0][0] + (A0tb[0][0]*t0);
