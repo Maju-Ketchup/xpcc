@@ -13,6 +13,92 @@
 */
 #include "multilateration.hpp"
 
+void xpcc::multilateration::activemultilaterationNewton(Vector<floatunit, 3> &output,
+														Vector<floatunit, 3> anchor1,
+														Vector<floatunit, 3> anchor2,
+														Vector<floatunit, 3> anchor3,
+														Vector<floatunit, 3> anchor4,
+														floatunit receiveAnchor1,
+														floatunit receiveAnchor2,
+														floatunit receiveAnchor3,
+														floatunit receiveAnchor4)
+{
+	floatunit speedoflight = 299792548.f;
+	//Berechne TOF zum Ausgangsvektor
+	floatunit tof0 = powf(anchor1[0] - output[0],2) + powf(anchor1[1] - output[1],2) + powf(anchor1[2] - output[2],2);
+	tof0 = (sqrt(tof0)/speedoflight)-receiveAnchor1;
+	floatunit tof1 = powf(anchor2[0] - output[0],2) + powf(anchor2[1] - output[1],2) + powf(anchor2[2] - output[2],2);
+	tof1 = (sqrt(tof1)/speedoflight)-receiveAnchor2;
+	floatunit tof2 = powf(anchor3[0] - output[0],2) + powf(anchor3[1] - output[1],2) + powf(anchor3[2] - output[2],2);
+	tof2 = (sqrt(tof2)/speedoflight)-receiveAnchor3;
+	floatunit tof3 = powf(anchor4[0] - output[0],2) + powf(anchor4[1] - output[1],2) + powf(anchor4[2] - output[2],2);
+	tof3 = (sqrt(tof3)/speedoflight)-receiveAnchor4;
+	xpcc::Matrix<floatunit,4,1> result;
+	result[0][0]=output[0];
+	result[1][0]=output[1];
+	result[2][0]=output[2];
+	result[3][0]=(-1)*((tof0+tof1+tof2+tof3)/4);
+	xpcc::Matrix<floatunit,4,4> anchormatrix;
+	anchormatrix[0][0] = anchor1[0];
+	anchormatrix[0][1] = anchor1[1];
+	anchormatrix[0][2] = anchor1[2];
+	anchormatrix[0][3] = receiveAnchor1;
+
+	anchormatrix[1][0] = anchor2[0];
+	anchormatrix[1][1] = anchor2[1];
+	anchormatrix[1][2] = anchor2[2];
+	anchormatrix[1][3] = receiveAnchor2;
+
+	anchormatrix[2][0] = anchor3[0];
+	anchormatrix[2][1] = anchor3[1];
+	anchormatrix[2][2] = anchor3[2];
+	anchormatrix[2][3] = receiveAnchor3;
+
+	anchormatrix[3][0] = anchor4[0];
+	anchormatrix[3][1] = anchor4[1];
+	anchormatrix[3][2] = anchor4[2];
+	anchormatrix[3][3] = receiveAnchor4;
+
+
+	//Iteration steps currently 5
+	for (int i=0;i<4;i++)
+	{
+		newton(anchormatrix,result);
+	}
+	//Ausgabe
+	output[0] = result[0][0];
+	output[1] = result[1][0];
+	output[2] = result[2][0];
+}
+
+void xpcc::multilateration::newton(xpcc::Matrix<floatunit,4,4> anchormatrix,xpcc::Matrix<floatunit,4,1> &result)
+{
+	floatunit speedoflight = 299792548.f;
+	//Calculate Jacobi Matrix and F = f(x,y,z,t) = spherefunction
+	xpcc::Matrix<floatunit,4,4> jacobi;
+	xpcc::Matrix<floatunit,4,1> f;
+	for (int i = 0; i<4 ; i++){
+		jacobi[i][0] = result[0][0] - 2*anchormatrix[i][0];
+		jacobi[i][1] = result[1][0] - 2*anchormatrix[i][1];
+		jacobi[i][2] = result[2][0] - 2*anchormatrix[i][2];
+		jacobi[i][3] = (powf(speedoflight,2)*result[3][0]) - (2* powf(speedoflight,2)*anchormatrix[i][3]);
+		f[i][0] = powf(anchormatrix[i][0]-result[0][0],2);
+		f[i][0] += powf(anchormatrix[i][1]-result[1][0],2);
+		f[i][0] += powf(anchormatrix[i][2]-result[2][0],2);
+		f[i][0] -= powf(speedoflight,2) * powf(anchormatrix[i][3]-result[3][0],2);
+		f[i][0] -= 2* f[i][0];
+	}
+	//solve LGS (Jacobi*z = -f) f(x,y,z,t) = spherefunction
+	xpcc::LUDecomposition::solve(jacobi,&f);
+	//Calculate (OLD)result - z
+	for (int i= 0;i<4;i++){
+		result[i][0] += f[i][0];
+	}
+	//done
+
+}
+
+
 void xpcc::multilateration::activemultilateration(Vector<floatunit, 3> &output,
 												  Vector<floatunit, 3> anchor1,
 												  Vector<floatunit, 3> anchor2,
@@ -94,7 +180,7 @@ void xpcc::multilateration::passivemultilateration(Vector<floatunit, 3> &output,
 	floatunit time3 = (SendtimeAnchor3-SendtimeAnchor1);
 	floatunit time4 = (SendtimeAnchor4-SendtimeAnchor1);
 
-	activemultilateration(output,anchor1,anchor2,anchor3,anchor4,
+	activemultilaterationNewton(output,anchor1,anchor2,anchor3,anchor4,
 						  ReceiveTimeAnchor1,
 						  (ReceiveTimeAnchor2 - time2),
 						  (ReceiveTimeAnchor3 - time3),
@@ -102,21 +188,6 @@ void xpcc::multilateration::passivemultilateration(Vector<floatunit, 3> &output,
 
 }
 
-void
-xpcc::multilateration::trilaterationAna(Vector<floatunit, 3> &output,
-									 Vector<floatunit, 3> anchor0,
-									 Vector<floatunit, 3> anchor1,
-									 Vector<floatunit, 3> anchor2,
-									 floatunit distanceToAnchor0,
-									 floatunit distanceToAnchor1,
-									 floatunit distanceToAnchor2)
-{
-const floatunit a0[12] = { 1,anchor0[0]*anchor0[0],anchor1[0]*anchor1[0],anchor2[0]*anchor2[0],
-						   1,anchor0[1]*anchor0[1],anchor1[1]*anchor1[1],anchor2[1]*anchor2[1],
-						   1,anchor0[2]*anchor0[2],anchor1[2]*anchor1[2],anchor2[2]*anchor2[2]};
-
-//Matrix<floatunit, 3,4> A0(a0);
-}
 
 void
 xpcc::multilateration::trilateration(Vector<floatunit, 3> &output,
@@ -177,24 +248,7 @@ xpcc::multilateration::trilateration(Vector<floatunit, 3> &output,
 void xpcc::multilateration::rotate(floatunit angle, floatunit &x, floatunit &y)
 {
 	floatunit xnew = floatunit(x * cos(angle) ) - floatunit(y * sin(angle));
-	floatunit ynew = floatunit(y * cos(angle) ) + floatunit(x* sin(angle));
+	floatunit ynew = floatunit(y * cos(angle) ) + floatunit(x * sin(angle));
 	x = xnew;
 	y = ynew;
-}
-
-void xpcc::multilateration::passiveMultilateration2D(Vector<floatunit, 3> &output,
-											  Vector<floatunit, 3> anchor1,
-											  Vector<floatunit, 3> anchor2,
-											  Vector<floatunit, 3> anchor3,
-											  floatunit ReceiveTimeAnchor1,
-											  floatunit ReceiveTimeAnchor2,
-											  floatunit ReceiveTimeAnchor3,
-											  floatunit ReceiveTimeAnchor4,
-											  floatunit SendtimeAnchor1,
-											  floatunit SendtimeAnchor2,
-											  floatunit SendtimeAnchor3)
-{
-	floatunit time1 = (SendtimeAnchor2-SendtimeAnchor1);
-	floatunit time2 = (SendtimeAnchor3-SendtimeAnchor1);
-
 }

@@ -169,7 +169,6 @@ xpcc::Ranging<ComDevice>::computeSsTwrDistance(xpcc::Frame802154 receiveframe)
 	receiveframe.getPayload(receiveframe.payloadlength,buffer);
 	if (buffer[0] == SSTWR_RESP || buffer[0] == DSTWR_RESP0)
 	{
-		//timeout.restart(0);
 		gettimestamps(responserx,responsetx,buffer);
 		owntx = ComDevice::readTXTimestamp64();
 		ownrx = ComDevice::readRXTimestamp64();
@@ -248,10 +247,10 @@ xpcc::Ranging<ComDevice>::sendtimestamps(uint8_t flag, xpcc::Frame802154 receive
 	send.setDestinationPANAddress(receiveframe.getDestinationPANAddress()); //Set PANAddress
 	send.setSourceAddress16(uint16_t(ComDevice::hostaddress));	//Set Sourceaddress to own address
 	ownrx = ComDevice::readRXTimestamp64();
-	sendtime = ((ownrx + (RESP_RX_TIMEOUT_UUS * (ComDevice::UUS_TO_TIME_UNIT))) >> 8);
-	owntx = ((((uint64_t)(sendtime & 0xFFFFFFEUL) << 8)  )) + ComDevice::TX_ANT_DLY;
+	sendtime = (ownrx + (RESP_RX_TIMEOUT_UUS * (ComDevice::UUS_TO_TIME_UNIT))) >> 8;
+	owntx = ((uint64_t)(sendtime & 0xFFFFFFFEUL) << 8) + ComDevice::TX_ANT_DLY;
 	// set starttime
-	setanswerpayload(buffer, flag , ownrx, owntx);
+	setanswerpayload(buffer, flag, ownrx, owntx);
 	(ComDevice::frame_seq_nb) = receiveframe.getSequenceNumber() + 1 ;
 	//SET ANSWER
 	send.setSequenceNumber(ComDevice::frame_seq_nb);
@@ -349,7 +348,6 @@ xpcc::Ranging<ComDevice>:: getTof(xpcc::Frame802154 receiveframe)
 	receiveframe.getPayload(receiveframe.payloadlength,buffer);
 	if (buffer[0] == DSTWR_RESP0 ||buffer[0] == DSTWR_INIT1)
 	{
-		//timeout.restart(0);
 		gettimestamps(responserx,responsetx,buffer);
 		owntx = ComDevice::readTXTimestamp64();
 		ownrx = ComDevice::readRXTimestamp64();

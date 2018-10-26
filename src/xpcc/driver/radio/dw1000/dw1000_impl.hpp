@@ -35,22 +35,22 @@ template < typename Spi, typename Cs, typename Reset, typename Irq >
 bool
 xpcc::Dw1000< Spi, Cs, Reset, Irq >::isChannelFree()
 {
-	const uint32_t rxEvent = (SYS_STATUS_RXPRD   |
-							  SYS_STATUS_RXSFDD  |
-							  SYS_STATUS_LDEDONE |
-							  SYS_STATUS_RXPHD	 |
-							  SYS_STATUS_RXPHE   |
-							  SYS_STATUS_RXDFR   |
-							  SYS_STATUS_RXFCG   |
+	const uint32_t rxEvent = (SYS_STATUS_RXPRD	|
+							  SYS_STATUS_RXSFDD	|
+							  SYS_STATUS_LDEDONE|
+							  SYS_STATUS_RXPHD	|
+							  SYS_STATUS_RXPHE	|
+							  SYS_STATUS_RXDFR	|
+							  SYS_STATUS_RXFCG	|
 							  SYS_STATUS_RXFCE);
 	write32bitreg(SYS_STATUS_ID,rxEvent);
 	rxEnable();
-	xpcc::delayMicroseconds(300);
+	xpcc::delayMicroseconds(50);
 	trxdisable();
 	if (readStatusRegister()&rxEvent)
 	{
 		rxreset();
-		XPCC_LOG_INFO.printf("\n\nChannel busy\n\n\n");
+		XPCC_LOG_INFO.printf("Channel busy\n");
 		return false;
 
 	}
@@ -68,7 +68,7 @@ xpcc::Dw1000< Spi, Cs, Reset, Irq >::getIRQReason()
 	uint32_t systatus = readStatusRegister();
 	systatus &= read32bitreg(SYS_MASK_ID);
 
-	if (systatus &  SYS_STATUS_RXDFR)
+	if (systatus & SYS_STATUS_RXDFR)
 	{
 		write32bitreg(SYS_STATUS_ID, SYS_STATUS_RXDFR);
 		return xpcc::dw1000::IRQreason::RX_Complete; //Frame received
@@ -308,9 +308,9 @@ xpcc::Dw1000< Spi, Cs, Reset, Irq >::checkForRXError()
 {
 	uint32_t status_reg = read32bitreg(SYS_STATUS_ID);
 	if (status_reg & SYS_STATUS_ALL_RX_TO)
-	{XPCC_LOG_ERROR << "!!!DWM1000: RECEIVE TIME OUT!!!" << xpcc::endl;}
+	{XPCC_LOG_DEBUG << "!!!DWM1000: RECEIVE TIME OUT!!!" << xpcc::endl;}
 	if (status_reg & SYS_STATUS_ALL_RX_ERR)
-	{XPCC_LOG_ERROR << "!!!DWM1000: RECEIVE ERROR OCCURRED!!!" << xpcc::endl;}
+	{XPCC_LOG_DEBUG << "!!!DWM1000: RECEIVE ERROR OCCURRED!!!" << xpcc::endl;}
 	return (read32bitreg(SYS_STATUS_ID) & SYS_STATUS_ALL_RX_ERR);
 }
 
