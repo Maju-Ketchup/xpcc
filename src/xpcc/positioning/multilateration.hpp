@@ -21,7 +21,7 @@
 #include <xpcc/math.hpp>
 #include <xpcc/debug/logger.hpp>
 
-typedef float floatunit;
+typedef double floatunit;
 
 namespace xpcc {
 

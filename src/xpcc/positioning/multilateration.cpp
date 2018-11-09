@@ -25,19 +25,19 @@ void xpcc::multilateration::activemultilaterationNewton(Vector<floatunit, 3> &ou
 {
 	floatunit speedoflight = 299792548.f;
 	//Berechne TOF zum Ausgangsvektor
-	floatunit tof0 = powf(anchor1[0] - output[0],2) + powf(anchor1[1] - output[1],2) + powf(anchor1[2] - output[2],2);
+    floatunit tof0 = powl(anchor1[0] - output[0],2) + powl(anchor1[1] - output[1],2) + powl(anchor1[2] - output[2],2);
 	tof0 = (sqrt(tof0)/speedoflight)-receiveAnchor1;
-	floatunit tof1 = powf(anchor2[0] - output[0],2) + powf(anchor2[1] - output[1],2) + powf(anchor2[2] - output[2],2);
+    floatunit tof1 = powl(anchor2[0] - output[0],2) + powl(anchor2[1] - output[1],2) + powl(anchor2[2] - output[2],2);
 	tof1 = (sqrt(tof1)/speedoflight)-receiveAnchor2;
-	floatunit tof2 = powf(anchor3[0] - output[0],2) + powf(anchor3[1] - output[1],2) + powf(anchor3[2] - output[2],2);
+    floatunit tof2 = powl(anchor3[0] - output[0],2) + powl(anchor3[1] - output[1],2) + powl(anchor3[2] - output[2],2);
 	tof2 = (sqrt(tof2)/speedoflight)-receiveAnchor3;
-	floatunit tof3 = powf(anchor4[0] - output[0],2) + powf(anchor4[1] - output[1],2) + powf(anchor4[2] - output[2],2);
+    floatunit tof3 = powl(anchor4[0] - output[0],2) + powl(anchor4[1] - output[1],2) + powl(anchor4[2] - output[2],2);
 	tof3 = (sqrt(tof3)/speedoflight)-receiveAnchor4;
 	xpcc::Matrix<floatunit,4,1> result;
 	result[0][0]=output[0];
 	result[1][0]=output[1];
 	result[2][0]=output[2];
-	result[3][0]=(-1)*((tof0+tof1+tof2+tof3)/4);
+    result[3][0]=(-1)*((tof0+tof1+tof2+tof3)/4);
 	xpcc::Matrix<floatunit,4,4> anchormatrix;
 	anchormatrix[0][0] = anchor1[0];
 	anchormatrix[0][1] = anchor1[1];
@@ -81,18 +81,18 @@ void xpcc::multilateration::newton(xpcc::Matrix<floatunit,4,4> anchormatrix,xpcc
 		jacobi[i][0] = result[0][0] - 2*anchormatrix[i][0];
 		jacobi[i][1] = result[1][0] - 2*anchormatrix[i][1];
 		jacobi[i][2] = result[2][0] - 2*anchormatrix[i][2];
-		jacobi[i][3] = (powf(speedoflight,2)*result[3][0]) - (2* powf(speedoflight,2)*anchormatrix[i][3]);
-		f[i][0] = powf(anchormatrix[i][0]-result[0][0],2);
-		f[i][0] += powf(anchormatrix[i][1]-result[1][0],2);
-		f[i][0] += powf(anchormatrix[i][2]-result[2][0],2);
-		f[i][0] -= powf(speedoflight,2) * powf(anchormatrix[i][3]-result[3][0],2);
+        jacobi[i][3] = (powl(speedoflight,2)*result[3][0]) - (2* powl(speedoflight,2)*anchormatrix[i][3]);
+        f[i][0] = powl(anchormatrix[i][0]-result[0][0],2);
+        f[i][0] += powl(anchormatrix[i][1]-result[1][0],2);
+        f[i][0] += powl(anchormatrix[i][2]-result[2][0],2);
+        f[i][0] -= powl(speedoflight,2) * powl(anchormatrix[i][3]-result[3][0],2);
 		f[i][0] -= 2* f[i][0];
 	}
 	//solve LGS (Jacobi*z = -f) f(x,y,z,t) = spherefunction
 	xpcc::LUDecomposition::solve(jacobi,&f);
 	//Calculate (OLD)result - z
-	for (int i= 0;i<4;i++){
-		result[i][0] += f[i][0];
+    for (int i= 0;i<10;i++){
+        result[i][0] += f[i][0];
 	}
 	//done
 
@@ -130,13 +130,13 @@ void xpcc::multilateration::activemultilateration(Vector<floatunit, 3> &output,
 		2*(anchor3.y-anchor4.y),
 		2*(anchor3.z-anchor4.z)
 	};
-	const floatunit A00ba[3] = {(powf(anchor1.x,2.0f)-powf(anchor4.x,2.0f))+(powf(anchor1.y,2.0f)-powf(anchor4.y,2.0f))+(powf(anchor1.z,2.0f)-powf(anchor4.z,2.0f))-((powf(speedoflight,2.0f)*powf(receiveTimeAnchor1,2.0f))-(powf(speedoflight,2.0f)*powf(receiveTimeAnchor4,2.0f))),
-								(powf(anchor2.x,2.0f)-powf(anchor4.x,2.0f))+(powf(anchor2.y,2.0f)-powf(anchor4.y,2.0f))+(powf(anchor2.z,2.0f)-powf(anchor4.z,2.0f))-((powf(speedoflight,2.0f)*powf(receiveTimeAnchor2,2.0f))-(powf(speedoflight,2.0f)*powf(receiveTimeAnchor4,2.0f))),
-								(powf(anchor3.x,2.0f)-powf(anchor4.x,2.0f))+(powf(anchor3.y,2.0f)-powf(anchor4.y,2.0f))+(powf(anchor3.z,2.0f)-powf(anchor4.z,2.0f))-((powf(speedoflight,2.0f)*powf(receiveTimeAnchor3,2.0f))-(powf(speedoflight,2.0f)*powf(receiveTimeAnchor4,2.0f)))
+    const floatunit A00ba[3] = {(powl(anchor1.x,2.0f)-powl(anchor4.x,2.0f))+(powl(anchor1.y,2.0f)-powl(anchor4.y,2.0f))+(powl(anchor1.z,2.0f)-powl(anchor4.z,2.0f))-((powl(speedoflight,2.0f)*powl(receiveTimeAnchor1,2.0f))-(powl(speedoflight,2.0f)*powl(receiveTimeAnchor4,2.0f))),
+                                (powl(anchor2.x,2.0f)-powl(anchor4.x,2.0f))+(powl(anchor2.y,2.0f)-powl(anchor4.y,2.0f))+(powl(anchor2.z,2.0f)-powl(anchor4.z,2.0f))-((powl(speedoflight,2.0f)*powl(receiveTimeAnchor2,2.0f))-(powl(speedoflight,2.0f)*powl(receiveTimeAnchor4,2.0f))),
+                                (powl(anchor3.x,2.0f)-powl(anchor4.x,2.0f))+(powl(anchor3.y,2.0f)-powl(anchor4.y,2.0f))+(powl(anchor3.z,2.0f)-powl(anchor4.z,2.0f))-((powl(speedoflight,2.0f)*powl(receiveTimeAnchor3,2.0f))-(powl(speedoflight,2.0f)*powl(receiveTimeAnchor4,2.0f)))
 							   };
-	const floatunit A0tba[3] = {	2*(powf(speedoflight,2)*(receiveTimeAnchor1-receiveTimeAnchor4)),
-									2*(powf(speedoflight,2)*(receiveTimeAnchor2-receiveTimeAnchor4)),
-									2*(powf(speedoflight,2)*(receiveTimeAnchor3-receiveTimeAnchor4))
+    const floatunit A0tba[3] = {	2*(powl(speedoflight,2)*(receiveTimeAnchor1-receiveTimeAnchor4)),
+                                    2*(powl(speedoflight,2)*(receiveTimeAnchor2-receiveTimeAnchor4)),
+                                    2*(powl(speedoflight,2)*(receiveTimeAnchor3-receiveTimeAnchor4))
 							   };
 	xpcc::Matrix<floatunit,3,1> A0tb(A0tba);
 	xpcc::Matrix<floatunit,3,3> A00M(A00A);
@@ -145,12 +145,12 @@ void xpcc::multilateration::activemultilateration(Vector<floatunit, 3> &output,
 	xpcc::LUDecomposition::solve(A00M,&A0tb);
 
 
-	floatunit A = powf((anchor4.x-A00b[0][0]),2.f)+powf((anchor4.y-A00b[1][0]),2.f)+powf((anchor4.z-A00b[2][0]),2.f) -powf((speedoflight*receiveTimeAnchor4),2.f);
-	floatunit B = ((anchor4.x-A00b[0][0])*A0tb[0][0])+((anchor4.y-A00b[1][0])*A0tb[0][1])+((anchor4.z-A00b[2][0])*A0tb[2][0])-(powf(speedoflight,2)*receiveTimeAnchor4);
-	floatunit C = powf(A0tb[0][0],2)+powf(A0tb[1][0],2)+powf(A0tb[2][0],2)-powf(speedoflight,2);
+    floatunit A = powl((anchor4.x-A00b[0][0]),2.f)+powl((anchor4.y-A00b[1][0]),2.f)+powl((anchor4.z-A00b[2][0]),2.f) -powl((speedoflight*receiveTimeAnchor4),2.f);
+    floatunit B = ((anchor4.x-A00b[0][0])*A0tb[0][0])+((anchor4.y-A00b[1][0])*A0tb[0][1])+((anchor4.z-A00b[2][0])*A0tb[2][0])-(powl(speedoflight,2)*receiveTimeAnchor4);
+    floatunit C = powl(A0tb[0][0],2)+powl(A0tb[1][0],2)+powl(A0tb[2][0],2)-powl(speedoflight,2);
 
 	floatunit t0 = (2 * B);
-	floatunit t1 = powf(4*B,2.f)- (4*A*C);
+    floatunit t1 = powl(4*B,2.f)- (4*A*C);
 	t0 = t0 + sqrt(abs(t1));
 	t0 = t0 / (C != 0 ? 2*C : 1);
 
@@ -180,11 +180,11 @@ void xpcc::multilateration::passivemultilateration(Vector<floatunit, 3> &output,
 	floatunit time3 = (SendtimeAnchor3-SendtimeAnchor1);
 	floatunit time4 = (SendtimeAnchor4-SendtimeAnchor1);
 
-	activemultilaterationNewton(output,anchor1,anchor2,anchor3,anchor4,
-						  ReceiveTimeAnchor1,
-						  (ReceiveTimeAnchor2 - time2),
-						  (ReceiveTimeAnchor3 - time3),
-						  (ReceiveTimeAnchor4 - time4));
+    activemultilateration(output,anchor1,anchor2,anchor3,anchor4,
+                          ReceiveTimeAnchor1,
+                          (ReceiveTimeAnchor2 - time2),
+                          (ReceiveTimeAnchor3 - time3),
+                          (ReceiveTimeAnchor4 - time4));
 
 }
 
@@ -218,12 +218,12 @@ xpcc::multilateration::trilateration(Vector<floatunit, 3> &output,
 	xpcc::multilateration::rotate (2*M_PI-rotationangleYZ,newAnchor2.y,newAnchor2.z);
 
 	//Berechne Output nach Pablo Cotera et al 2016 [Indoor Robot Positioning using an Enhanced Trilateration Algorithm]
-	output.x = (powf(distanceToAnchor0,2)-powf(distanceToAnchor1,2)+powf(newAnchor1.x,2)) / (newAnchor1.x != 0 ? 2*newAnchor1.x : 1);
-	output.y = ((powf(distanceToAnchor0,2)-powf(distanceToAnchor2,2))
-				+powf(newAnchor2.x,2) + powf(newAnchor2.y,2)-(2*newAnchor2.x*output.x))
+    output.x = (powl(distanceToAnchor0,2)-powl(distanceToAnchor1,2)+powl(newAnchor1.x,2)) / (newAnchor1.x != 0 ? 2*newAnchor1.x : 1);
+    output.y = ((powl(distanceToAnchor0,2)-powl(distanceToAnchor2,2))
+                +powl(newAnchor2.x,2) + powl(newAnchor2.y,2)-(2*newAnchor2.x*output.x))
 			/ (newAnchor2.y != 0 ? 2*newAnchor2.y : 1);
 
-	floatunit zsqaured = powf(distanceToAnchor0,2.0) - powf(output.x,2.0) - powf(output.y,2.0);
+    floatunit zsqaured = powl(distanceToAnchor0,2.0) - powl(output.x,2.0) - powl(output.y,2.0);
 
 	if (zsqaured < 0)
 	{

@@ -25,7 +25,7 @@ public:
 	 * 1 uus = 512 / 499.2 µs and 1 µs = 499.2 * 128 dtu. */
 	static constexpr uint32_t	UUS_TO_TIME_UNIT		= 65536;
 	static constexpr float		UUS_TO_MICROS			= (4992e-1/512e0);
-	static constexpr float		TIME_UNIT_TO_S			= (1/65536)*(499.2/512)*(1/10e6);
+    static constexpr long double		TIME_UNIT_TO_S  = 1.5650040064102e-11;
 	static constexpr uint32_t	standardAntennaDelay	= 16436;
 
 
