@@ -55,7 +55,7 @@ public:
 
 
 	/* Receive response timeout. */
-	static constexpr int RESP_RX_TIMEOUT_UUS = 1350;
+	static constexpr int RESP_RX_TIMEOUT_UUS = 1500;
 
 	/* Speed of light in vakuum, in meters per second. */
 	static constexpr int SPEED_OF_LIGHT = 299792548;

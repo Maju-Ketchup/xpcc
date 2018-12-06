@@ -38,6 +38,8 @@
 
 
 // ------------------------------XPCC----------------------------------------------
+#undef	XPCC_LOG_LEVEL
+#define	XPCC_LOG_LEVEL xpcc::log::DEBUG
 xpcc::IODeviceWrapper< Usart2, xpcc::IOBuffer::BlockIfFull > loggerDevice;
 
 // // Set all four logger streams to use the UART
@@ -74,8 +76,8 @@ static xpcc::dw1000::config_t config =
 };
 
 /* Default antenna delay values for 64 MHz PRF*/
-static constexpr int TX_ANT_DLY = 16436;
-static constexpr int RX_ANT_DLY = 16436;
+static constexpr int TX_ANT_DLY = 0;
+static constexpr int RX_ANT_DLY = 0;
 static constexpr uint16_t hostaddress= 0xBBBB;
 
 
@@ -95,7 +97,7 @@ main()
 	//setup USART
 	GpioOutputA2::connect(Usart2::Tx);
 	GpioInputA3::connect(Usart2::Rx, Gpio::InputType::PullUp);
-	Usart2::initialize<Board::systemClock, 115200>(12);
+	Usart2::initialize<Board::systemClock, 460800>(12);
 	//initialize the board
 	Board::initialize();
 	//activate the CS on the DW1000
@@ -128,7 +130,7 @@ main()
 		LedBlue::reset();
 
 		//------------------------------------------------------------ Receive Message--------------------------------------------------------------------
-		timeout.restart(5);
+		timeout.restart(10);
 		dwm::rxEnable();
 		LedOrange::set();
 		while(not(dwm::checkForRXError() || (isrx = dwm::checkForRX())  || timeout.isExpired())){}
@@ -151,7 +153,7 @@ main()
 					dwm::rxreset();
 					dwm::rxEnable();
 					isrx = false;
-					timeout.restart(150);
+					timeout.restart(10);
 					LedOrange::set();
 					while(not(dwm::checkForRXError() || (isrx = dwm::checkForRX())  || timeout.isExpired())){}
 					LedOrange::reset();
@@ -168,7 +170,6 @@ main()
 								XPCC_LOG_INFO.printf("DISTANCE TO %0x IS %5.2fm \n",receiveframe.getSourceAddress16(),distance);
 								timeout.restart(5);
 							}
-
 						}
 					}
 				}
