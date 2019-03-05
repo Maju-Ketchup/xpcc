@@ -91,7 +91,7 @@ void xpcc::multilateration::newton(xpcc::Matrix<floatunit,4,4> anchormatrix,xpcc
 	//solve LGS (Jacobi*z = -f) f(x,y,z,t) = spherefunction
 	xpcc::LUDecomposition::solve(jacobi,&f);
 	//Calculate (OLD)result - z
-    for (int i= 0;i<10;i++){
+    for (int i= 0;i<4;i++){
         result[i][0] += f[i][0];
 	}
 	//done
@@ -252,3 +252,70 @@ void xpcc::multilateration::rotate(floatunit angle, floatunit &x, floatunit &y)
 	x = xnew;
 	y = ynew;
 }
+
+void xpcc::multilateration::trilaterationwithcorrection(Vector<floatunit, 3> &output,
+									 Vector<floatunit, 3> anchor0,
+									 Vector<floatunit, 3> anchor1,
+									 Vector<floatunit, 3> anchor2,
+									 Vector<floatunit, 3> anchor3,
+									 floatunit distanceToAnchor0,
+									 floatunit distanceToAnchor1,
+									 floatunit distanceToAnchor2,
+									 floatunit distanceToAnchor3)
+{
+	//Annahme Positionsarrays {x,y,z} in m und Distanz in m
+	//Offset berechnen
+	output.x = 0.0;
+	output.y = 0.0;
+	output.z = 0.0;
+	Vector<floatunit,3> offset = Vector<floatunit,3>(anchor0.x,anchor0.y,anchor0.z);
+	Vector<floatunit,3> newAnchor1 = Vector<floatunit,3>(anchor1.x-offset.x,anchor1.y-offset.y,anchor1.z-offset.z);
+	Vector<floatunit,3> newAnchor2 = Vector<floatunit,3>(anchor2.x-offset.x,anchor2.y-offset.y,anchor2.z-offset.z);
+	Vector<floatunit,3> newAnchor3 = Vector<floatunit,3>(anchor3.x-offset.x,anchor3.y-offset.y,anchor3.z-offset.z);
+
+	//Rotation berechnen -- Die von den drei Anchorpunkten aufgespannte Ebene wird in die XY Ebene rotiert
+	float rotationangleXY = atan2 (newAnchor1.y,newAnchor1.x);
+	xpcc::multilateration::rotate (2*M_PI-rotationangleXY,newAnchor1.x,newAnchor1.y);
+	xpcc::multilateration::rotate (2*M_PI-rotationangleXY,newAnchor2.x,newAnchor2.y);
+	xpcc::multilateration::rotate (2*M_PI-rotationangleXY,newAnchor3.x,newAnchor3.y);
+	floatunit rotationangleXZ = atan2 (newAnchor1.z,newAnchor1.x);
+	xpcc::multilateration::rotate (2*M_PI-rotationangleXZ,newAnchor1.x,newAnchor1.z);
+	xpcc::multilateration::rotate (2*M_PI-rotationangleXZ,newAnchor2.x,newAnchor2.z);
+	xpcc::multilateration::rotate (2*M_PI-rotationangleXZ,newAnchor3.x,newAnchor3.z);
+	floatunit rotationangleYZ = atan2 (newAnchor2.z,newAnchor2.y);
+	xpcc::multilateration::rotate (2*M_PI-rotationangleYZ,newAnchor2.y,newAnchor2.z);
+	xpcc::multilateration::rotate (2*M_PI-rotationangleYZ,newAnchor3.y,newAnchor3.z);
+
+	//Berechne Output nach Pablo Cotera et al 2016 [Indoor Robot Positioning using an Enhanced Trilateration Algorithm]
+    output.x = (powl(distanceToAnchor0,2)-powl(distanceToAnchor1,2)+powl(newAnchor1.x,2)) / (newAnchor1.x != 0 ? 2*newAnchor1.x : 1);
+    output.y = ((powl(distanceToAnchor0,2)-powl(distanceToAnchor2,2))
+                +powl(newAnchor2.x,2) + powl(newAnchor2.y,2)-(2*newAnchor2.x*output.x))
+			/ (newAnchor2.y != 0 ? 2*newAnchor2.y : 1);
+
+    floatunit zsqaured = powl(distanceToAnchor0,2.0) - powl(output.x,2.0) - powl(output.y,2.0);
+    floatunit distancetopos = sqrt(powl(output.x-newAnchor3.x,2.0f)+powl(output.y-newAnchor3.y,2.0f)+powl(sqrt(abs(zsqaured))-newAnchor3.z,2.0f));
+    floatunit distancetoneg = sqrt(powl(output.x-newAnchor3.x,2.0f)+powl(output.y-newAnchor3.y,2.0f)+powl((-1)*sqrt(abs(zsqaured))-newAnchor3.z,2.0f));
+
+	if (abs(distancetopos-distanceToAnchor3)>abs(distancetoneg-distanceToAnchor3))
+	{
+		output.z = (-1) *  sqrt(abs(zsqaured));
+	}
+	else
+	{
+		output.z = sqrt(abs(zsqaured));
+	}
+
+	//zurückrotieren
+	xpcc::multilateration::rotate (rotationangleYZ,output.y,output.z);
+	xpcc::multilateration::rotate (rotationangleXZ,output.x,output.z);
+	xpcc::multilateration::rotate (rotationangleXY,output.x,output.y);
+	//Offset aufrechnen
+	output.x = output.x + offset.x;
+	output.y = output.y + offset.y;
+	output.z = output.z + offset.z;
+	//done
+}
+
+
+
+

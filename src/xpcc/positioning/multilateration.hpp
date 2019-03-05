@@ -143,9 +143,21 @@ Computes the Position of a tag when the Sendtimes of the Tag and the receive tim
 									   const floatunit SendtimeAnchor3,
 									   const floatunit SendtimeAnchor4);
 
+	static void trilaterationwithcorrection(Vector<floatunit, 3> &output,
+										 Vector<floatunit, 3> anchor0,
+										 Vector<floatunit, 3> anchor1,
+										 Vector<floatunit, 3> anchor2,
+										 Vector<floatunit, 3> anchor3,
+										 floatunit distanceToAnchor0,
+										 floatunit distanceToAnchor1,
+										 floatunit distanceToAnchor2,
+										 floatunit distanceToAnchor3);
+
 private:
 	static void rotate(floatunit angle, floatunit &x, floatunit &y);
 	static void newton(xpcc::Matrix<floatunit,4,4> anchormatrix,xpcc::Matrix<floatunit,4,1> &result);
 };
+
+
 }
-#endif // MULTILATERATION_HPP
+#endif // MULTILATERATION_HPP1
