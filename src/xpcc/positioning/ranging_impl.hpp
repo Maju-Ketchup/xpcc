@@ -22,8 +22,8 @@ float
 xpcc::Ranging<ComDevice>::computeDsTwrDistance(float distance,xpcc::Frame802154 receiveframe)
 {
 
-	uint8_t buffer[5];
-	receiveframe.getPayload(5,buffer);
+	uint8_t buffer[6];
+	receiveframe.getPayload(6,buffer);
 	//receiveframe.debugToString();
 	if (buffer[0] == DSTWR_RESP1)
 	{
@@ -172,8 +172,9 @@ xpcc::Ranging<ComDevice>::computeSsTwrDistance(xpcc::Frame802154 receiveframe)
 		gettimestamps(responserx,responsetx,buffer);
 		owntx = ComDevice::readTXTimestamp64();
 		ownrx = ComDevice::readRXTimestamp64();
-
-		tof = computeSsTwrTof(ownrx,owntx,responsetx,responserx)*ComDevice::TIME_UNIT_TO_S;
+		tof = (float)computeSsTwrTof(ownrx,owntx,responsetx,responserx)*ComDevice::TIME_UNIT_TO_S;
+		//XPCC_LOG_INFO.printf ("TOF is: %d \n",computeSsTwrTof(ownrx,owntx,responsetx,responserx));
+		//XPCC_LOG_INFO.printf ("TOF float is: %.9lf \n",tof);
 		distance = computeDistance(tof,SPEED_OF_LIGHT);
 		ComDevice::frame_seq_nb = receiveframe.getSequenceNumber() + 1 ;
 
@@ -248,7 +249,7 @@ xpcc::Ranging<ComDevice>::sendtimestamps(uint8_t flag, xpcc::Frame802154 receive
 	send.setSourceAddress16(uint16_t(ComDevice::hostaddress));	//Set Sourceaddress to own address
 	ownrx = ComDevice::readRXTimestamp64();
 	sendtime = (ownrx + (RESP_RX_TIMEOUT_UUS * (ComDevice::UUS_TO_TIME_UNIT))) >> 8;
-	owntx = ((uint64_t)(sendtime & 0xFFFFFFFEUL) << 8) + ComDevice::TX_ANT_DLY;
+	owntx = ((uint64_t)((uint64_t)sendtime & 0xFFFFFFFEUL) << 8) + ComDevice::TX_ANT_DLY;
 	// set starttime
 	setanswerpayload(buffer, flag, ownrx, owntx);
 	(ComDevice::frame_seq_nb) = receiveframe.getSequenceNumber() + 1 ;
@@ -291,7 +292,7 @@ xpcc::Ranging<ComDevice>::getTof(uint8_t buffer[])
 	for (i=1;i<5;i++){
 		tof |= (uint32_t)buffer[i]<<(i-1)*8;}
 	if (buffer[5] == 0xFF){
-		tof = 0- tof;	}
+		tof = 0 - tof;	}
 	return tof;
 }
 
@@ -357,6 +358,7 @@ xpcc::Ranging<ComDevice>:: getTof(xpcc::Frame802154 receiveframe)
 	else if (buffer[0] == DSTWR_RESP1)
 	{
 		tof = getTof(buffer);
+		XPCC_LOG_DEBUG.printf("foreign tof %d \n",tof);
 	}
 	else
 	{
